@@ -1,0 +1,7 @@
+# Ignore configuration files with sensitive data
+appsettings.json
+appsettings.Development.json
+appsettings.example.json
+# Ignore build outputs
+bin/
+obj/
