@@ -1,0 +1,179 @@
+@model IEnumerable<CarInfoManagementSystem.Models.Car>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Cars";
+}
+
+<div class="container-fluid py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h1 class="display-4 mb-0">Cars</h1>
+        </div>
+        @if (User.IsInRole("Administrator"))
+        {
+            <div class="col-auto">
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add New Car
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <form asp-action="Search" method="get" class="search-form">
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="searchName" class="form-control" placeholder="Search by model, manufacturer, or type...">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form asp-action="FilterByManufacturerAndType" method="get" class="row g-2">
+                        <div class="col-5">
+                            <select name="manufacturerId" class="form-select" asp-items="ViewBag.Manufacturers" onchange="this.form.submit()">
+                                <option value="">All Manufacturers</option>
+                            </select>
+                        </div>
+                        <div class="col-5">
+                            <select name="typeId" class="form-select" asp-items="ViewBag.CarTypes" onchange="this.form.submit()">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="col-2">
+                            <button type="submit" class="btn btn-secondary w-100">
+                                <i class="bi bi-funnel"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    @if (!string.IsNullOrEmpty(item.PhotoUrl))
+                    {
+                        <div class="card-img-wrapper">
+                            <img src="@Url.Content(item.PhotoUrl)" 
+                                class="card-img-top car-image" 
+                                alt="@item.Model"
+                                onerror="this.onerror=null; this.src='/images/no-image.png'; this.classList.add('fallback-image');"
+                                loading="lazy">
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-img-wrapper d-flex align-items-center justify-content-center bg-light">
+                            <i class="bi bi-car-front-fill text-secondary" style="font-size: 4rem;"></i>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Model</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@item.Manufacturer.Name</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="bi bi-gear"></i> @item.TransmissionType.Name |
+                                <i class="bi bi-speedometer2"></i> @item.BHP BHP |
+                                <i class="bi bi-fuel-pump"></i> @item.Engine
+                            </small>
+                        </p>
+                        <h5 class="text-primary">₹@item.Price.ToString("N0")</h5>
+                        <div class="mt-3">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-info-circle"></i> Details
+                            </a>
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    transition: all .3s ease;
+}
+
+.card-img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.car-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.car-image:hover {
+    transform: scale(1.05);
+}
+
+.fallback-image {
+    padding: 2rem;
+    object-fit: contain;
+}
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // URL params handling
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('manufacturerId')) {
+                document.querySelector('select[name="manufacturerId"]').value = urlParams.get('manufacturerId');
+            }
+            if (urlParams.has('typeId')) {
+                document.querySelector('select[name="typeId"]').value = urlParams.get('typeId');
+            }
+
+            // Debug image loading
+            document.querySelectorAll('.car-image').forEach(img => {
+                img.addEventListener('load', function() {
+                    console.log('Image loaded successfully:', this.src);
+                });
+                
+                img.addEventListener('error', function() {
+                    console.error('Image failed to load:', this.src);
+                    // Retry loading the image once
+                    if (!this.dataset.retried) {
+                        this.dataset.retried = true;
+                        setTimeout(() => {
+                            this.src = this.src;
+                        }, 1000);
+                    }
+                });
+            });
+        });
+    </script>
+}
