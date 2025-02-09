@@ -1,183 +1,133 @@
 @model CarInfoManagementSystem.Models.Car
 
 @{
-    ViewData["Title"] = "Car Details";
+    ViewData["Title"] = $"{Model.Manufacturer?.Name} {Model.Model}";
 }
 
-<div class="container-fluid px-4 py-4">
-    <div class="card">
-        <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h3 class="mb-1">@Model.Manufacturer?.Name @Model.Model</h3>
-                    <p class="text-medium-emphasis mb-0">Detailed vehicle information</p>
-                </div>
-                @if (User.IsInRole("Administrator"))
-                {
-                    <div class="d-flex gap-2">
-                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                            <i class="bi bi-pencil me-2"></i>Edit Car
-                        </a>
-                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-2"></i>Delete
-                        </a>
-                    </div>
-                }
-            </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/car-details.css" />
+}
 
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card bg-surface-3 h-100">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">Car Specifications</h5>
-                            <div class="row g-4">
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Model</label>
-                                        <span class="fs-5">@Model.Model</span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Manufacturer</label>
-                                        <span class="fs-5">@Model.Manufacturer?.Name</span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Type</label>
-                                        <span class="spec-item">
-                                            <i class="bi bi-car-front"></i>
-                                            @Model.CarType?.Type
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Engine</label>
-                                        <span class="spec-item">
-                                            <i class="bi bi-gear"></i>
-                                            @Model.Engine
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">BHP</label>
-                                        <span class="spec-item">
-                                            <i class="bi bi-speedometer2"></i>
-                                            @Model.BHP BHP
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Transmission</label>
-                                        <span class="spec-item">
-                                            <i class="bi bi-gear-wide"></i>
-                                            @Model.TransmissionType?.Name
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Mileage</label>
-                                        <span class="spec-item">
-                                            <i class="bi bi-fuel-pump"></i>
-                                            @Model.Mileage km
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Seats</label>
-                                        <span class="spec-item">
-                                            <i class="bi bi-person"></i>
-                                            @Model.Seat seats
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="spec-group">
-                                        <label class="text-medium-emphasis d-block mb-2">Price</label>
-                                        <span class="badge bg-primary fs-5">
-                                            <i class="bi bi-currency-dollar"></i>
-                                            @Model.Price.ToString("N0")
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card bg-surface-3 h-100">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">Additional Features</h5>
-                            <div class="mb-4">
-                                <label class="text-medium-emphasis d-block mb-2">Boot Space</label>
-                                <span class="spec-item">
-                                    <i class="bi bi-box"></i>
-                                    @Model.BootSpace liters
+<div class="container-fluid px-4">
+    <div class="car-details-hero" data-aos="fade">
+        <div class="position-relative w-100 h-100">
+            @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+            {
+                <img src="@Model.PhotoUrl" alt="@Model.Model" class="w-100 h-100 object-fit-cover" />
+            }
+            <div class="overlay-gradient"></div>
+            <div class="car-details-content">
+                <div class="row align-items-end">
+                    <div class="col-lg-8" data-aos="fade-right">
+                        <div class="mb-4">
+                            <h1 class="display-4 mb-2">@Model.Manufacturer?.Name @Model.Model</h1>
+                            <div class="d-flex flex-wrap gap-3">
+                                <span class="badge bg-primary px-4 py-2">
+                                    <i class="bi bi-currency-rupee me-1"></i> @Model.Price.ToString("N0")
+                                </span>
+                                <span class="badge bg-secondary px-4 py-2">
+                                    <i class="bi bi-tag-fill me-1"></i> @Model.CarType?.Type
                                 </span>
                             </div>
-                            <div class="mb-4">
-                                <label class="text-medium-emphasis d-block mb-2">Air Bag Details</label>
-                                <p class="mb-0">@Model.AirBagDetails</p>
-                            </div>
-                            <div>
-                                <label class="text-medium-emphasis d-block mb-2">Features</label>
-                                <p class="mb-0">@Model.Features</p>
-                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-12">
-                    <div class="card bg-surface-3">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">Car Image</h5>
-                            @if (!string.IsNullOrEmpty(Model.PhotoUrl))
-                            {
-                                <img src="@Model.PhotoUrl" alt="@Model.Model" class="img-fluid rounded" style="max-height: 400px; width: 100%; object-fit: cover;" />
-                            }
-                            else
-                            {
-                                <div class="text-center py-5 text-medium-emphasis">
-                                    <i class="bi bi-image display-4"></i>
-                                    <p class="mt-2">No image available</p>
-                                </div>
-                            }
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <div class="col-lg-4 text-lg-end" data-aos="fade-left">
+                            <div class="d-flex gap-2 justify-content-lg-end">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-pencil me-2"></i>Edit Car
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg">
+                                    <i class="bi bi-trash me-2"></i>Delete
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
-            </div>
-
-            <div class="mt-4">
-                <a asp-action="Index" class="btn btn-outline-primary">
-                    <i class="bi bi-arrow-left me-2"></i>Back to List
-                </a>
             </div>
         </div>
     </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8" data-aos="fade-up">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Technical Specifications</h4>
+                    <div class="row g-4">
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="spec-box text-center">
+                                <i class="bi bi-gear-fill"></i>
+                                <h6 class="mt-3 mb-2">Engine</h6>
+                                <p class="mb-0 fs-5">@Model.Engine</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="spec-box text-center">
+                                <i class="bi bi-speedometer2"></i>
+                                <h6 class="mt-3 mb-2">Power Output</h6>
+                                <p class="mb-0 fs-5">@Model.BHP BHP</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="spec-box text-center">
+                                <i class="bi bi-gear-wide"></i>
+                                <h6 class="mt-3 mb-2">Transmission</h6>
+                                <p class="mb-0 fs-5">@Model.TransmissionType?.Name</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="spec-box text-center">
+                                <i class="bi bi-fuel-pump"></i>
+                                <h6 class="mt-3 mb-2">Mileage</h6>
+                                <p class="mb-0 fs-5">@Model.Mileage km/l</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="spec-box text-center">
+                                <i class="bi bi-people"></i>
+                                <h6 class="mt-3 mb-2">Seating</h6>
+                                <p class="mb-0 fs-5">@Model.Seat seats</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="spec-box text-center">
+                                <i class="bi bi-box"></i>
+                                <h6 class="mt-3 mb-2">Boot Space</h6>
+                                <p class="mb-0 fs-5">@Model.BootSpace litres</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Safety & Features</h4>
+                    
+                    <div class="safety-feature mb-4">
+                        <h6 class="text-primary d-flex align-items-center mb-3">
+                            <i class="bi bi-shield-check me-2"></i>
+                            Air Bag Configuration
+                        </h6>
+                        <p class="mb-4 ps-4">@Model.AirBagDetails</p>
+                        
+                        <h6 class="text-primary d-flex align-items-center mb-3">
+                            <i class="bi bi-star me-2"></i>
+                            Premium Features
+                        </h6>
+                        <p class="mb-0 ps-4">@Model.Features</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4" data-aos="fade-up">
+        <a asp-action="Index" class="btn btn-outline-primary btn-lg px-4">
+            <i class="bi bi-arrow-left me-2"></i>Back to Inventory
+        </a>
+    </div>
 </div>
-
-<style>
-    .spec-group {
-        height: 100%;
-    }
-
-    .spec-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background-color: var(--mdc-theme-surface-2);
-        border-radius: 8px;
-        font-weight: 500;
-    }
-
-    .spec-item i {
-        color: var(--mdc-theme-primary);
-        font-size: 1.1rem;
-    }
-</style>

@@ -5,99 +5,107 @@
 }
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    .auth-wrapper {
+        min-height: calc(100vh - 60px);
+        background: linear-gradient(135deg, var(--dark-surface) 0%, var(--dark-bg) 100%);
+        position: relative;
         overflow: hidden;
     }
 
-    .video-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-    }
-
-    .login-container {
+    .auth-wrapper::before {
+        content: '';
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        max-width: 400px;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
+        width: 1000px;
+        height: 1000px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        filter: blur(80px);
+        opacity: 0.15;
+        top: -400px;
+        right: -400px;
+        z-index: 0;
     }
 
-    .card {
-        background: transparent;
-        border: none;
-        box-shadow: none;
+    .auth-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 800px;
+        height: 800px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+        filter: blur(80px);
+        opacity: 0.1;
+        bottom: -300px;
+        left: -300px;
+        z-index: 0;
+    }
+
+    .auth-container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     }
 </style>
 
-<video class="video-background" autoplay muted loop>
-    <source src="https://cdn.pixabay.com/video/2022/02/04/106722-673786473_large.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
-
-<div class="container-fluid px-4">
-    <div class="row justify-content-center min-vh-75 align-items-center">
-        <div class="col-md-5" data-aos="fade-up">
-            <div class="text-center mb-4">
-                <i class="bi bi-car-front-fill text-premium display-1"></i>
-                <h1 class="text-premium mt-3">Welcome Back</h1>
-                <p class="text-secondary">Sign in to access your premium dashboard</p>
-            </div>
-
-            <div class="card">
-                <div class="card-body p-4">
-                    <form asp-action="Login" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger fade show"></div>
-                        <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="Email" class="form-control" placeholder="name@example.com" autofocus />
-                            <label asp-for="Email">Email Address</label>
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="Password" class="form-control" placeholder="Password" />
-                            <label asp-for="Password">Password</label>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-check mb-3">
-                            <input asp-for="RememberMe" class="form-check-input" />
-                            <label asp-for="RememberMe" class="form-check-label text-secondary">Remember me</label>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right"></i> Sign In
-                            </button>
-                            <a asp-action="Register" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-outline-primary">
-                                <i class="bi bi-person-plus"></i> Create Account
-                            </a>
-                        </div>
-                    </form>
+<div class="auth-wrapper">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center min-vh-75 align-items-center auth-container">
+            <div class="col-md-5" data-aos="fade-up">
+                <div class="text-center mb-4">
+                    <i class="bi bi-shield-lock text-premium display-1"></i>
+                    <h1 class="text-premium mt-3">Welcome Back</h1>
+                    <p class="text-secondary">Access your premium dashboard</p>
                 </div>
-            </div>
 
-            <div class="text-center mt-4">
-                <p class="text-secondary">
-                    By signing in, you agree to our
-                    <a href="#" class="text-premium">Terms of Service</a> and
-                    <a href="#" class="text-premium">Privacy Policy</a>
-                </p>
+                <div class="auth-card">
+                    <div class="card-body p-4">
+                        <form asp-action="Login" method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger fade show"></div>
+                            <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+
+                            <div class="form-floating mb-3">
+                                <input asp-for="Email" class="form-control" placeholder="name@example.com" autofocus />
+                                <label asp-for="Email">Email Address</label>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input asp-for="Password" class="form-control" placeholder="Password" />
+                                <label asp-for="Password">Password</label>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input asp-for="RememberMe" class="form-check-input" />
+                                <label asp-for="RememberMe" class="form-check-label text-secondary">Remember me</label>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-shield-lock me-2"></i> Sign In
+                                </button>
+                                <a asp-action="Register" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-outline-primary">
+                                    <i class="bi bi-person-plus me-2"></i> Create Account
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-secondary">
+                        By signing in, you agree to our
+                        <a href="#" class="text-premium">Terms of Service</a> and
+                        <a href="#" class="text-premium">Privacy Policy</a>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -106,7 +114,6 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        // Add floating label animation
         document.querySelectorAll('.form-floating input').forEach(element => {
             if (element.value) {
                 element.parentElement.classList.add('focused');

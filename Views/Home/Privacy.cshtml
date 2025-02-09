@@ -1,6 +1,52 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8" data-aos="fade-up">
+            <div class="card glass">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-shield-lock text-primary display-1"></i>
+                        <h1 class="display-4 mt-3">Privacy Policy</h1>
+                        <p class="text-secondary">How we protect and handle your data</p>
+                    </div>
+
+                    <div class="privacy-content">
+                        <div class="mb-4">
+                            <h4 class="mb-3">Data Collection</h4>
+                            <p class="text-secondary">We collect information that you provide directly to us, including personal information such as your name, email address, and other details when you register for an account or update your profile.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="mb-3">Data Usage</h4>
+                            <p class="text-secondary">The information we collect is used to provide and improve our services, communicate with you, and ensure a seamless experience on our platform.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="mb-3">Data Protection</h4>
+                            <p class="text-secondary">We implement appropriate security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="mb-3">Your Rights</h4>
+                            <p class="text-secondary">You have the right to access, update, or delete your personal information at any time. Contact us if you need assistance with managing your data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .privacy-content h4 {
+        color: var(--primary-color);
+    }
+
+    .card {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+</style>
