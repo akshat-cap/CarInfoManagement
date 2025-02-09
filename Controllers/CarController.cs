@@ -81,6 +81,7 @@ namespace CarInfoManagementSystem.Controllers
 
         // POST: Car/Create
         // POST: Car/Create
+   
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator")]
@@ -135,12 +136,10 @@ namespace CarInfoManagementSystem.Controllers
 
                     var authJSON = new
                     {
-                        //CarType = car.CarType?.Type,
                         Engine = car.Engine,
                         BHP = car.BHP,
                         Mileage = car.Mileage,
                         Seat = car.Seat,
-                        //TransmissionType = car.TransmissionType?.Name,
                         BootSpace = car.BootSpace,
                         Price = car.Price
                     };
@@ -149,38 +148,41 @@ namespace CarInfoManagementSystem.Controllers
                     string json = JsonSerializer.Serialize(authJSON, new JsonSerializerOptions { WriteIndented = true });
                     Console.WriteLine(json);
 
-                    // Send to external service
-                    string url = "https://prod-31.uaenorth.logic.azure.com:443/workflows/43897f618acd4373aceb809fd17de6f6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_OUgg0zNMDY4zRrtnPTE-pymnDNXc3bYERwafJbnuoM";
+                    // Send GET request to Logic App or an endpoint to confirm success
+                    string validateUrl = "https://prod-31.uaenorth.logic.azure.com:443/workflows/43897f618acd4373aceb809fd17de6f6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_OUgg0zNMDY4zRrtnPTE-pymnDNXc3bYERwafJbnuoM";
                     using HttpClient client = new HttpClient();
-
-                    HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     try
                     {
-                        // Send the POST request
-                        HttpResponseMessage response = await client.PostAsync(url, content);
+                        // Send the GET request to validate the process
+                        HttpResponseMessage response = await client.GetAsync(validateUrl);
 
-                        // Check if the request was successful
                         if (response.IsSuccessStatusCode)
                         {
-                            string responseBody = await response.Content.ReadAsStringAsync();
-                            Console.WriteLine("Response: " + responseBody);
+                            // Only proceed if the GET request is successful
+                            car.PhotoUrl = bloburi;
+                            _context.Add(car);
+                            await _context.SaveChangesAsync();
+                            TempData["Success"] = "Car created successfully!";
+                            return RedirectToAction(nameof(Index));  // Ensure we return to Index after success
                         }
                         else
                         {
-                            Console.WriteLine($"Error: {response.StatusCode}");
+                            // If GET request fails, log error and return failure message
+                            ModelState.AddModelError("", "Failed to validate the process. Please try again.");
+                            TempData["ErrorMessage"] = "Failed to validate the process. Please try again.";
+                            PopulateDropDowns();
+                            return View(car);
+                            // Return to the view with error message
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Exception occurred: " + ex.Message);
+                        // Handle exceptions in GET request
+                        ModelState.AddModelError("", "Error communicating with external service: " + ex.Message);
+                        PopulateDropDowns();
+                        return View(car);  // Return the view if the request fails
                     }
-
-                    car.PhotoUrl = bloburi;
-                    _context.Add(car);
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Car created successfully!";
-                    return RedirectToAction(nameof(Index));  // Ensure we return to Index after success
                 }
 
                 PopulateDropDowns();

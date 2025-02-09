@@ -170,8 +170,18 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
+        // Check if there's an error message in TempData and show it as a Toastr notification
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+                    toastr.error('@TempData["ErrorMessage"]');
+            </text>
+        }
+
         function showManufacturerInput() {
             var modal = new bootstrap.Modal(document.getElementById('quickAddManufacturerModal'));
             modal.show();
