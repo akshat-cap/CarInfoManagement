@@ -25,10 +25,6 @@ namespace CarInfoManagementSystem.Data
                 .HasIndex(m => m.Name)
                 .IsUnique();
 
-            modelBuilder.Entity<Manufacturer>()
-                .HasIndex(m => m.ContactPerson)
-                .IsUnique();
-
             modelBuilder.Entity<CarType>()
                 .HasIndex(ct => ct.Type)
                 .IsUnique();

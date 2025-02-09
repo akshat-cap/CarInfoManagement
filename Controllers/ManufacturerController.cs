@@ -30,14 +30,28 @@ namespace CarInfoManagementSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(manufacturer);
-                await _context.SaveChangesAsync();
-                
-                if (!string.IsNullOrEmpty(returnUrl))
+                try
                 {
-                    return Redirect(returnUrl);
+                    _context.Add(manufacturer);
+                    await _context.SaveChangesAsync();
+                    
+                    if (!string.IsNullOrEmpty(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+                    return RedirectToAction("Create", "Car");
                 }
-                return RedirectToAction("Create", "Car");
+                catch (DbUpdateException ex)
+                {
+                    if (ex.InnerException?.Message.Contains("IX_Manufacturers_Name") == true)
+                    {
+                        ModelState.AddModelError("Name", "This manufacturer name already exists.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Unable to save changes. Please try again.");
+                    }
+                }
             }
             ViewBag.ReturnUrl = returnUrl;
             return View(manufacturer);
@@ -53,11 +67,25 @@ namespace CarInfoManagementSystem.Controllers
                 return Json(new { success = false, message = "Name is required" });
             }
 
-            var manufacturer = new Manufacturer { Name = model.Name };
-            _context.Add(manufacturer);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var manufacturer = new Manufacturer { 
+                    Name = model.Name
+                };
 
-            return Json(new { success = true, id = manufacturer.Id, name = manufacturer.Name });
+                _context.Add(manufacturer);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, id = manufacturer.Id, name = manufacturer.Name });
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException?.Message.Contains("IX_Manufacturers_Name") == true)
+                {
+                    return Json(new { success = false, message = "This manufacturer name already exists." });
+                }
+                return Json(new { success = false, message = "Unable to add manufacturer. Please try again." });
+            }
         }
     }
 

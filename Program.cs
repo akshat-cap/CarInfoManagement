@@ -6,6 +6,19 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add logging to verify connection string
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+});
+var startupLogger = loggerFactory.CreateLogger<Program>();
+
+var defaultConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+startupLogger.LogInformation($"DefaultConnection: {defaultConnectionString}");
+
+var azureBlobStorageConnectionString = builder.Configuration.GetConnectionString("AzureBlobStorage");
+startupLogger.LogInformation($"AzureBlobStorage: {azureBlobStorageConnectionString}");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

@@ -80,8 +80,6 @@ namespace CarInfoManagementSystem.Controllers
         }
 
         // POST: Car/Create
-        // POST: Car/Create
-   
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator")]
@@ -91,108 +89,102 @@ namespace CarInfoManagementSystem.Controllers
             {
                 if (car.PhotoFile != null && car.PhotoFile.Length > 0)
                 {
-                    var extension = Path.GetExtension(car.PhotoFile.FileName).ToLower();
-                    var validExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                    if (!Array.Exists(validExtensions, ext => ext == extension))
-                    {
-                        ModelState.AddModelError("", "Invalid file type. Only image files are allowed.");
-                        PopulateDropDowns();
-                        return View(car);  // Ensure we return the view with errors
-                    }
-
-                    // Set up the file path for saving the file locally
-                    string fn = car.PhotoFile.FileName; // Use the original file name
-                    string folder = "cars\\"; // Folder name in wwwroot
+                    string fn = Path.GetFileName(car.PhotoFile.FileName);
+                    string folder = "cars\\";
                     string filename = DateTime.Now.ToString("ddMMyyyyhhmmss") + fn;
                     folder += filename;
 
-                    // Local path to save the file in wwwroot
                     string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", filename);
-
-                    // Save the file locally
-                    using (var fileStream = new FileStream(serverFolder, FileMode.Create))
-                    {
-                        await car.PhotoFile.CopyToAsync(fileStream);
-                    }
-
-                    // After saving the file, upload it to Azure Blob Storage
-                    BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-                    await containerClient.CreateIfNotExistsAsync();
-
-                    // Create a BlobClient for the file
-                    BlobClient blobClient = containerClient.GetBlobClient(filename);
-
-                    // Upload the file to Azure Blob Storage
-                    using (var stream = new FileStream(serverFolder, FileMode.Open))
-                    {
-                        await blobClient.UploadAsync(stream, overwrite: true);
-                    }
-
-                    // Optionally, delete the local file after uploading
-                    System.IO.File.Delete(serverFolder);
-                    var id = Guid.NewGuid().ToString();
-
-                    string bloburi = blobClient.Uri.ToString();
-
-                    var authJSON = new
-                    {
-                        Engine = car.Engine,
-                        BHP = car.BHP,
-                        Mileage = car.Mileage,
-                        Seat = car.Seat,
-                        BootSpace = car.BootSpace,
-                        Price = car.Price
-                    };
-
-                    // Convert to JSON string
-                    string json = JsonSerializer.Serialize(authJSON, new JsonSerializerOptions { WriteIndented = true });
-                    Console.WriteLine(json);
-
-                    // Send GET request to Logic App or an endpoint to confirm success
-                    string validateUrl = "https://prod-31.uaenorth.logic.azure.com:443/workflows/43897f618acd4373aceb809fd17de6f6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_OUgg0zNMDY4zRrtnPTE-pymnDNXc3bYERwafJbnuoM";
-                    using HttpClient client = new HttpClient();
 
                     try
                     {
-                        // Send the GET request to validate the process
-                        HttpResponseMessage response = await client.GetAsync(validateUrl);
-
-                        if (response.IsSuccessStatusCode)
+                        // Save file locally
+                        using (var fileStream = new FileStream(serverFolder, FileMode.Create))
                         {
-                            // Only proceed if the GET request is successful
-                            car.PhotoUrl = bloburi;
-                            _context.Add(car);
-                            await _context.SaveChangesAsync();
-                            TempData["Success"] = "Car created successfully!";
-                            return RedirectToAction(nameof(Index));  // Ensure we return to Index after success
+                            await car.PhotoFile.CopyToAsync(fileStream);
                         }
-                        else
+
+                        // Upload to Azure Blob Storage
+                        BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+                        await containerClient.CreateIfNotExistsAsync();
+                        BlobClient blobClient = containerClient.GetBlobClient(filename);
+
+                        using (var stream = new FileStream(serverFolder, FileMode.Open))
                         {
-                            // If GET request fails, log error and return failure message
-                            ModelState.AddModelError("", "Failed to validate the process. Please try again.");
-                            TempData["ErrorMessage"] = "Failed to validate the process. Please try again.";
-                            PopulateDropDowns();
-                            return View(car);
-                            // Return to the view with error message
+                            await blobClient.UploadAsync(stream, overwrite: true);
+                        }
+
+                        System.IO.File.Delete(serverFolder);
+                        string bloburi = blobClient.Uri.ToString();
+
+                        // Prepare validation data
+                        var authJSON = new
+                        {
+                            Engine = car.Engine,
+                            BHP = car.BHP,
+                            Mileage = car.Mileage,
+                            Seat = car.Seat,
+                            BootSpace = car.BootSpace,
+                            Price = car.Price
+                        };
+
+                        string json = JsonSerializer.Serialize(authJSON);
+
+                        try
+                        {
+                            using (var client = new HttpClient())
+                            {
+                                client.Timeout = TimeSpan.FromSeconds(30);
+                                var validateUrl = "https://prod-31.uaenorth.logic.azure.com:443/workflows/43897f618acd4373aceb809fd17de6f6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_OUgg0zNMDY4zRrtnPTE-pymnDNXc3bYERwafJbnuoM";
+                                
+                                // Create the content for POST request
+                                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                                
+                                // Send POST request
+                                var response = await client.PostAsync(validateUrl, content);
+                                
+                                if (response.IsSuccessStatusCode)
+                                {
+                                    car.PhotoUrl = bloburi;
+                                    _context.Add(car);
+                                    await _context.SaveChangesAsync();
+                                    TempData["Success"] = "Car created successfully!";
+                                    return RedirectToAction(nameof(Index));
+                                }
+                                else
+                                {
+                                    var errorContent = await response.Content.ReadAsStringAsync();
+                                    ModelState.AddModelError("", $"Validation failed: {errorContent}");
+                                    TempData["ErrorMessage"] = $"Failed to validate the car details. Status: {response.StatusCode}. Please try again.";
+                                }
+                            }
+                        }
+                        catch (HttpRequestException ex)
+                        {
+                            ModelState.AddModelError("", $"Network error during validation: {ex.Message}");
+                            TempData["ErrorMessage"] = "Failed to connect to validation service. Please try again later.";
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError("", $"Validation error: {ex.Message}");
+                            TempData["ErrorMessage"] = "An unexpected error occurred during validation. Please try again.";
                         }
                     }
                     catch (Exception ex)
                     {
-                        // Handle exceptions in GET request
-                        ModelState.AddModelError("", "Error communicating with external service: " + ex.Message);
-                        PopulateDropDowns();
-                        return View(car);  // Return the view if the request fails
+                        ModelState.AddModelError("", $"File upload error: {ex.Message}");
+                        TempData["ErrorMessage"] = "Failed to upload image. Please try again.";
                     }
                 }
-
-                PopulateDropDowns();
-                return View(car);  // Return the view if photo file is not valid
+                else
+                {
+                    ModelState.AddModelError("PhotoFile", "Please select a photo file.");
+                }
             }
 
             PopulateDropDowns();
-            return View(car);  // Return the view if model state is invalid
+            return View(car);
         }
-
 
         // GET: Car/Edit/5
         [Authorize(Roles = "Administrator")]

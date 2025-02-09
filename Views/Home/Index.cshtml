@@ -1,8 +1,152 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section position-relative text-white mb-4" data-aos="fade">
+    <div class="hero-image position-absolute w-100 h-100" style="
+        background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        filter: saturate(1.2);
+    "></div>
+    <div class="container-fluid px-4 py-5">
+        <div class="row min-vh-50 align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h1 class="display-4 fw-bold mb-3" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3)">Car Info Management System</h1>
+                <p class="lead mb-4 fs-4" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">Smart and efficient vehicle information platform</p>
+                <div class="d-flex gap-3">
+                    <a asp-controller="Car" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-car-front me-2"></i>View Cars
+                    </a>
+                    @if (!User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Register
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="features-section py-4">
+    <div class="container-fluid px-4">
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-surface-3 p-3 rounded-circle me-3">
+                                <i class="bi bi-shield-check fs-4 text-primary"></i>
+                            </div>
+                            <h5 class="mb-0 fs-4">Reliable Data</h5>
+                        </div>
+                        <p class="text-medium-emphasis mb-0">Access accurate and up-to-date vehicle information with our comprehensive database system</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-surface-3 p-3 rounded-circle me-3">
+                                <i class="bi bi-gear-wide-connected fs-4 text-primary"></i>
+                            </div>
+                            <h5 class="mb-0 fs-4">Easy Management</h5>
+                        </div>
+                        <p class="text-medium-emphasis mb-0">Streamlined tools and intuitive interface for efficient vehicle data handling</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-surface-3 p-3 rounded-circle me-3">
+                                <i class="bi bi-graph-up fs-4 text-primary"></i>
+                            </div>
+                            <h5 class="mb-0 fs-4">Quick Updates</h5>
+                        </div>
+                        <p class="text-medium-emphasis mb-0">Real-time synchronization ensuring your data is always current and accessible</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section py-4">
+    <div class="container-fluid px-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" data-aos="fade-up">
+                    <div class="card-body p-5">
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <h3 class="mb-2">Start Managing Your Vehicle Data</h3>
+                                <p class="text-medium-emphasis mb-lg-0 fs-5">Experience our comprehensive vehicle information management tools</p>
+                            </div>
+                            <div class="col-lg-4 text-lg-end">
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <a asp-controller="Car" asp-action="Index" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-car-front me-2"></i>Browse Cars
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-person-plus me-2"></i>Get Started
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-icon {
+    background-color: var(--mdc-theme-surface-3);
+    transition: transform 0.3s ease;
+}
+
+.card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.hero-section {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--mdc-theme-surface-2);
+}
+
+.hero-image {
+    transition: transform 0.3s ease-out;
+}
+
+.cta-section .card {
+    background: linear-gradient(45deg, var(--mdc-theme-surface-2), var(--mdc-theme-surface-3));
+    border: none;
+}
+</style>
+
+@section Scripts {
+    <script>
+        // Add subtle parallax effect to hero section
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const heroImage = document.querySelector('.hero-image');
+            if (heroImage) {
+                heroImage.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+    </script>
+}

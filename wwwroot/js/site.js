@@ -94,3 +94,149 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Premium UI Enhancements
+document.addEventListener('DOMContentLoaded', function() {
+    // Configure Toastr notifications
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-bottom-right",
+        "preventDuplicates": true,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Enhanced dropdown menus
+    const dropdowns = document.querySelectorAll('.dropdown-toggle');
+    dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('show.bs.dropdown', function () {
+            this.classList.add('active');
+        });
+        dropdown.addEventListener('hide.bs.dropdown', function () {
+            this.classList.remove('active');
+        });
+    });
+
+    // Form validation styling
+    const forms = document.querySelectorAll('.needs-validation');
+    forms.forEach(form => {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                // Add premium shake animation to invalid fields
+                form.querySelectorAll(':invalid').forEach(field => {
+                    field.classList.add('shake-animation');
+                    setTimeout(() => field.classList.remove('shake-animation'), 500);
+                });
+            }
+            form.classList.add('was-validated');
+        });
+    });
+
+    // Enhanced image loading
+    const images = document.querySelectorAll('img[loading="lazy"]');
+    images.forEach(img => {
+        img.addEventListener('load', function() {
+            this.classList.add('fade-in');
+        });
+    });
+
+    // Premium hover effects for cards
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px)';
+            this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    });
+
+    // Animated counters for statistics
+    function animateValue(element, start, end, duration) {
+        if (start === end) return;
+        const range = end - start;
+        const increment = end > start ? 1 : -1;
+        const stepTime = Math.abs(Math.floor(duration / range));
+        let current = start;
+        const timer = setInterval(() => {
+            current += increment;
+            element.textContent = current.toLocaleString();
+            if (current === end) {
+                clearInterval(timer);
+            }
+        }, stepTime);
+    }
+
+    // Initialize number animations when elements come into view
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.target.classList.contains('animate-number')) {
+                const end = parseInt(entry.target.getAttribute('data-value'));
+                animateValue(entry.target, 0, end, 2000);
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+
+    document.querySelectorAll('.animate-number').forEach(number => observer.observe(number));
+
+    // Premium button hover effects
+    const buttons = document.querySelectorAll('.btn-primary, .btn-outline-primary');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Floating labels enhancement
+    const floatingInputs = document.querySelectorAll('.form-floating input, .form-floating textarea');
+    floatingInputs.forEach(input => {
+        if (input.value) {
+            input.parentElement.classList.add('filled');
+        }
+        input.addEventListener('focus', () => {
+            input.parentElement.classList.add('focused');
+        });
+        input.addEventListener('blur', () => {
+            input.parentElement.classList.remove('focused');
+            if (input.value) {
+                input.parentElement.classList.add('filled');
+            } else {
+                input.parentElement.classList.remove('filled');
+            }
+        });
+    });
+
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(tooltip => {
+        new bootstrap.Tooltip(tooltip);
+    });
+});

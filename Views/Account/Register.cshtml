@@ -4,40 +4,57 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2>Create a new account</h2>
+<div class="container-fluid px-4">
+    <div class="row justify-content-center min-vh-75 align-items-center">
+        <div class="col-md-5" data-aos="fade-up">
+            <div class="text-center mb-4">
+                <i class="bi bi-person-plus-fill text-premium display-1"></i>
+                <h1 class="text-premium mt-3">Create Account</h1>
+                <p class="text-secondary">Join our exclusive luxury vehicle platform</p>
             </div>
-            <div class="card-body">
-                <form asp-action="Register" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
 
-                    <div class="form-group mb-3">
-                        <label asp-for="Email" class="control-label"></label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
+            <div class="card">
+                <div class="card-body p-4">
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger fade show"></div>
+                        <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
 
-                    <div class="form-group mb-3">
-                        <label asp-for="Password" class="control-label"></label>
-                        <input asp-for="Password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control" placeholder="name@example.com" autofocus />
+                            <label asp-for="Email">Email Address</label>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
 
-                    <div class="form-group mb-3">
-                        <label asp-for="ConfirmPassword" class="control-label"></label>
-                        <input asp-for="ConfirmPassword" class="form-control" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                    </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Password" class="form-control" placeholder="Password" />
+                            <label asp-for="Password">Password</label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
 
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                        <a asp-action="Login" class="btn btn-link">Already have an account? Login</a>
-                    </div>
-                </form>
+                        <div class="form-floating mb-4">
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm Password" />
+                            <label asp-for="ConfirmPassword">Confirm Password</label>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Create Account
+                            </button>
+                            <a asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-outline-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Sign In Instead
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-secondary">
+                    By registering, you agree to our
+                    <a href="#" class="text-premium">Terms of Service</a> and
+                    <a href="#" class="text-premium">Privacy Policy</a>
+                </p>
             </div>
         </div>
     </div>
@@ -45,4 +62,20 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Add floating label animation
+        document.querySelectorAll('.form-floating input').forEach(element => {
+            if (element.value) {
+                element.parentElement.classList.add('focused');
+            }
+            element.addEventListener('focus', () => {
+                element.parentElement.classList.add('focused');
+            });
+            element.addEventListener('blur', () => {
+                if (!element.value) {
+                    element.parentElement.classList.remove('focused');
+                }
+            });
+        });
+    </script>
 }
