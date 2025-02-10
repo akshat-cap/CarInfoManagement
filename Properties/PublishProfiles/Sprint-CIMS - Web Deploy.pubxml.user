@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <History>True|2025-02-10T13:20:46.1082991Z||;False|2025-02-10T18:48:58.2942572+05:30||;True|2025-02-10T18:44:52.9554820+05:30||;True|2025-02-10T18:41:27.1980046+05:30||;True|2025-02-10T17:19:18.9279266+05:30||;</History>
+    <LastFailureDetails />
+    <EncryptedPassword />
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Server=tcp:sprint-cims.database.windows.net,1433%3bInitial Catalog=Sprint_CarInfoMngtSystem%3bPersist Security Info=False%3bUser ID=sprint_admin%3bPassword={your_password}%3bMultipleActiveResultSets=False%3bEncrypt=True%3bTrustServerCertificate=False%3bConnection Timeout=30%3b</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>

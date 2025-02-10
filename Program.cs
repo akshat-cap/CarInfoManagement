@@ -5,6 +5,7 @@ using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Net.Http.Headers;
 using CarInfoManagementSystem.Middleware;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.Name = ".CarInfo.Session";
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(builder.Configuration["ConnectionStrings:AzureBlobStorage1:blobServiceUri"]!).WithName("ConnectionStrings:AzureBlobStorage1");
+    clientBuilder.AddQueueServiceClient(builder.Configuration["ConnectionStrings:AzureBlobStorage1:queueServiceUri"]!).WithName("ConnectionStrings:AzureBlobStorage1");
+    clientBuilder.AddTableServiceClient(builder.Configuration["ConnectionStrings:AzureBlobStorage1:tableServiceUri"]!).WithName("ConnectionStrings:AzureBlobStorage1");
 });
 
 var app = builder.Build();
