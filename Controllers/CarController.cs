@@ -89,17 +89,13 @@ namespace CarInfoManagementSystem.Controllers
             {
                 if (car.PhotoFile != null && car.PhotoFile.Length > 0)
                 {
-                    string fn = Path.GetFileName(car.PhotoFile.FileName);
-                    string folder = "cars\\";
-                    string filename = DateTime.Now.ToString("ddMMyyyyhhmmss") + fn;
-                    folder += filename;
-
-                    string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", filename);
+                    string fileName = DateTime.Now.ToString("ddMMyyyyhhmmss") + Path.GetFileName(car.PhotoFile.FileName);
+                    string localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", fileName);
 
                     try
                     {
-                        // Save file locally
-                        using (var fileStream = new FileStream(serverFolder, FileMode.Create))
+                        // Save file locally first
+                        using (var fileStream = new FileStream(localPath, FileMode.Create))
                         {
                             await car.PhotoFile.CopyToAsync(fileStream);
                         }
@@ -107,15 +103,23 @@ namespace CarInfoManagementSystem.Controllers
                         // Upload to Azure Blob Storage
                         BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
                         await containerClient.CreateIfNotExistsAsync();
-                        BlobClient blobClient = containerClient.GetBlobClient(filename);
+                        BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
-                        using (var stream = new FileStream(serverFolder, FileMode.Open))
+                        var blobHttpHeaders = new BlobHttpHeaders
                         {
-                            await blobClient.UploadAsync(stream, overwrite: true);
+                            ContentType = car.PhotoFile.ContentType,
+                            CacheControl = "public, max-age=31536000"
+                        };
+
+                        using (var stream = System.IO.File.OpenRead(localPath))
+                        {
+                            await blobClient.UploadAsync(stream, new BlobUploadOptions
+                            {
+                                HttpHeaders = blobHttpHeaders
+                            });
                         }
 
-                        System.IO.File.Delete(serverFolder);
-                        string bloburi = blobClient.Uri.ToString();
+                        car.PhotoUrl = blobClient.Uri.ToString();
 
                         // Prepare validation data
                         var authJSON = new
@@ -137,15 +141,11 @@ namespace CarInfoManagementSystem.Controllers
                                 client.Timeout = TimeSpan.FromSeconds(30);
                                 var validateUrl = "https://prod-31.uaenorth.logic.azure.com:443/workflows/43897f618acd4373aceb809fd17de6f6/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=_OUgg0zNMDY4zRrtnPTE-pymnDNXc3bYERwafJbnuoM";
                                 
-                                // Create the content for POST request
                                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                                
-                                // Send POST request
                                 var response = await client.PostAsync(validateUrl, content);
                                 
                                 if (response.IsSuccessStatusCode)
                                 {
-                                    car.PhotoUrl = bloburi;
                                     _context.Add(car);
                                     await _context.SaveChangesAsync();
                                     TempData["Success"] = "Car created successfully!";
@@ -156,6 +156,12 @@ namespace CarInfoManagementSystem.Controllers
                                     var errorContent = await response.Content.ReadAsStringAsync();
                                     ModelState.AddModelError("", $"Validation failed: {errorContent}");
                                     TempData["ErrorMessage"] = $"Failed to validate the car details. Status: {response.StatusCode}. Please try again.";
+                                    // Clean up the uploaded files if validation fails
+                                    if (System.IO.File.Exists(localPath))
+                                    {
+                                        System.IO.File.Delete(localPath);
+                                    }
+                                    await blobClient.DeleteIfExistsAsync();
                                 }
                             }
                         }
@@ -163,17 +169,34 @@ namespace CarInfoManagementSystem.Controllers
                         {
                             ModelState.AddModelError("", $"Network error during validation: {ex.Message}");
                             TempData["ErrorMessage"] = "Failed to connect to validation service. Please try again later.";
+                            // Clean up the uploaded files if validation fails
+                            if (System.IO.File.Exists(localPath))
+                            {
+                                System.IO.File.Delete(localPath);
+                            }
+                            await blobClient.DeleteIfExistsAsync();
                         }
                         catch (Exception ex)
                         {
                             ModelState.AddModelError("", $"Validation error: {ex.Message}");
                             TempData["ErrorMessage"] = "An unexpected error occurred during validation. Please try again.";
+                            // Clean up the uploaded files if validation fails
+                            if (System.IO.File.Exists(localPath))
+                            {
+                                System.IO.File.Delete(localPath);
+                            }
+                            await blobClient.DeleteIfExistsAsync();
                         }
                     }
                     catch (Exception ex)
                     {
                         ModelState.AddModelError("", $"File upload error: {ex.Message}");
                         TempData["ErrorMessage"] = "Failed to upload image. Please try again.";
+                        // Clean up any uploaded files
+                        if (System.IO.File.Exists(localPath))
+                        {
+                            System.IO.File.Delete(localPath);
+                        }
                     }
                 }
                 else
@@ -219,30 +242,62 @@ namespace CarInfoManagementSystem.Controllers
             {
                 try
                 {
-                    if (car.PhotoFile != null)
+                    var existingCar = await _context.Cars.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+                    if (existingCar == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (car.PhotoFile == null)
+                    {
+                        car.PhotoUrl = existingCar.PhotoUrl;
+                    }
+                    else
                     {
                         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
                         await containerClient.CreateIfNotExistsAsync();
 
-                        // Delete old photo if exists
-                        if (!string.IsNullOrEmpty(car.PhotoUrl))
+                        // Delete old photo from blob if exists
+                        if (!string.IsNullOrEmpty(existingCar.PhotoUrl))
                         {
-                            var oldUri = new Uri(car.PhotoUrl);
-                            var oldBlobName = Path.GetFileName(oldUri.LocalPath);
-                            var oldBlobClient = containerClient.GetBlobClient(oldBlobName);
-                            await oldBlobClient.DeleteIfExistsAsync();
+                            try
+                            {
+                                var oldUri = new Uri(existingCar.PhotoUrl);
+                                var oldBlobName = Path.GetFileName(oldUri.LocalPath);
+                                var oldBlobClient = containerClient.GetBlobClient(oldBlobName);
+                                await oldBlobClient.DeleteIfExistsAsync();
+
+                                // Delete old local file if it exists
+                                string oldLocalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", oldBlobName);
+                                if (System.IO.File.Exists(oldLocalPath))
+                                {
+                                    System.IO.File.Delete(oldLocalPath);
+                                }
+                            }
+                            catch
+                            {
+                                // If there's any error deleting the old photo, just continue
+                            }
                         }
 
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(car.PhotoFile.FileName);
-                        var blobClient = containerClient.GetBlobClient(fileName);
+                        string fileName = DateTime.Now.ToString("ddMMyyyyhhmmss") + Path.GetFileName(car.PhotoFile.FileName);
+                        string localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", fileName);
+                        
+                        // Save locally first
+                        using (var fileStream = new FileStream(localPath, FileMode.Create))
+                        {
+                            await car.PhotoFile.CopyToAsync(fileStream);
+                        }
 
+                        // Upload to blob storage
+                        var blobClient = containerClient.GetBlobClient(fileName);
                         var blobHttpHeaders = new BlobHttpHeaders
                         {
                             ContentType = car.PhotoFile.ContentType,
                             CacheControl = "public, max-age=31536000"
                         };
 
-                        using (var stream = car.PhotoFile.OpenReadStream())
+                        using (var stream = System.IO.File.OpenRead(localPath))
                         {
                             await blobClient.UploadAsync(stream, new BlobUploadOptions
                             {
@@ -250,12 +305,14 @@ namespace CarInfoManagementSystem.Controllers
                             });
                         }
 
+                        // Store the full blob URL in the database
                         car.PhotoUrl = blobClient.Uri.ToString();
                     }
 
                     _context.Update(car);
                     await _context.SaveChangesAsync();
                     TempData["Success"] = "Car updated successfully!";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -263,12 +320,8 @@ namespace CarInfoManagementSystem.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
             PopulateDropDowns();
             return View(car);
