@@ -28,6 +28,21 @@
     left: 0;
     width: 100%;
     padding: 4rem;
+    background: linear-gradient(
+        to top,
+        rgba(15, 23, 42, 0.98) 0%,
+        rgba(15, 23, 42, 0.95) 20%,
+        rgba(15, 23, 42, 0.9) 60%,
+        rgba(15, 23, 42, 0.8) 100%
+    );
+}
+
+.car-details-content h1,
+.car-details-content h2,
+.car-details-content h3,
+.car-details-content p {
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .spec-box {
@@ -37,8 +52,6 @@
     border-radius: 16px;
     padding: 2rem;
     height: 100%;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .spec-box:hover {
@@ -58,21 +71,21 @@
 }
 
 .spec-box h6 {
-    color: var(--primary-light);
+    color: #ffffff;
     font-size: 1.1rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.75rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .spec-box p {
-    color: #fff;
+    color: #ffffff;
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .safety-feature {

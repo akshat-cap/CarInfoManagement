@@ -84,7 +84,7 @@ namespace CarInfoManagementSystem.Controllers
                 {
                     return Json(new { success = false, message = "This manufacturer name already exists." });
                 }
-                return Json(new { success = false, message = "Unable to add manufacturer. Please try again." });
+                return Json(new { success = false, message = "An error occurred while adding the manufacturer." });
             }
         }
     }

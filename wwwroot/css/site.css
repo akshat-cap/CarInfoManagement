@@ -81,6 +81,24 @@ h1, h2, h3, h4, h5, h6 {
     text-align: start;
 }
 
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    opacity: 1;
+    background-color: var(--dark-surface);
+    transform: scale(0.85) translateY(-1rem) translateX(0.15rem);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--primary-light);
+    z-index: 5;
+}
+
+.form-floating > label {
+    padding: 0.75rem 1rem;
+    color: var(--text-tertiary);
+    background: transparent;
+}
+
 /* Modern Card Styles */
 .card {
     background: var(--dark-surface);
@@ -142,8 +160,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .car-title {
-    color: var(--text-high-emphasis);
-    font-weight: 500;
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .manufacturer {
@@ -163,11 +182,12 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--dark-surface-2);
+    background: rgba(30, 41, 59, 0.9);
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .spec-item i {
@@ -184,7 +204,8 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.5rem 1rem;
     border-radius: 12px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .car-price .badge {
@@ -338,6 +359,7 @@ h1, h2, h3, h4, h5, h6 {
 .form-floating > label {
     padding: 0.75rem 1rem;
     color: var(--text-tertiary);
+    background: transparent;
 }
 
 .form-floating > .form-control:focus ~ label,
@@ -352,6 +374,124 @@ h1, h2, h3, h4, h5, h6 {
 .form-floating > .form-control:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label {
     color: var(--primary-light);
+}
+
+/* Form control improvements */
+.form-floating {
+    position: relative;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-select {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+    background: rgba(30, 41, 59, 0.95);
+    color: #ffffff;
+}
+
+.form-floating > .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.form-floating > .form-control:focus::placeholder {
+    opacity: 0.7;
+}
+
+.form-floating > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+    color: rgba(255, 255, 255, 0.7);
+    z-index: 1;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    opacity: 1;
+    transform: scale(0.85) translateY(-1rem);
+    background: var(--primary-color);
+    color: #ffffff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    z-index: 5;
+    left: 8px;
+}
+
+.form-floating > .form-control:-webkit-autofill,
+.form-floating > .form-control:-webkit-autofill:hover,
+.form-floating > .form-control:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(30, 41, 59, 0.95) inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover, 
+.form-control:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--dark-surface) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-floating > .form-control:autofill + label {
+    background: var(--primary-color);
+    color: #ffffff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transform: scale(0.85) translateY(-1rem);
+}
+
+.form-control:focus::placeholder {
+    opacity: 0;
+}
+
+.form-floating > .form-control {
+    padding: 1.625rem 0.75rem 0.625rem;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    transform: scale(0.85) translateY(-0.75rem) translateX(0);
+    padding: 0.25rem 0.5rem;
+    background: var(--primary-color);
+    border-radius: 4px;
+    left: 8px;
+    height: auto;
+    color: white;
+    z-index: 5;
+}
+
+input:-webkit-autofill::first-line,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: white !important;
+    caret-color: white;
+    -webkit-box-shadow: 0 0 0 1000px var(--dark-surface) inset !important;
+    font-family: var(--font-primary);
+}
+
+.form-floating input::placeholder {
+    color: transparent;
+}
+
+.form-floating input:focus::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* Input Groups */
@@ -968,6 +1108,7 @@ dd {
 .text-gradient {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -1098,6 +1239,12 @@ dd {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.auth-card .form-control:focus {
+    background: rgba(30, 41, 59, 0.98);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 }
 
 .form-floating > .form-control:focus,

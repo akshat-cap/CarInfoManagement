@@ -28,12 +28,16 @@ namespace CarInfoManagementSystem.Middleware
                 return;
             }
 
-            // Add cache headers
+            // Strong caching headers
             context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
             {
                 Public = true,
-                MaxAge = TimeSpan.FromDays(30),
+                MaxAge = TimeSpan.FromDays(1),
+                MustRevalidate = true
             };
+
+            // Add Vary header to handle different client capabilities
+            context.Response.Headers.Vary = "Accept-Encoding";
 
             // Add ETag support
             var fileInfo = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", path.TrimStart('/')));

@@ -248,6 +248,7 @@ namespace CarInfoManagementSystem.Controllers
                         return NotFound();
                     }
 
+                    // Keep existing photo if no new one is uploaded
                     if (car.PhotoFile == null)
                     {
                         car.PhotoUrl = existingCar.PhotoUrl;
@@ -260,19 +261,12 @@ namespace CarInfoManagementSystem.Controllers
                         // Delete old photo from blob if exists
                         if (!string.IsNullOrEmpty(existingCar.PhotoUrl))
                         {
+                            var oldUri = new Uri(existingCar.PhotoUrl);
+                            var oldBlobName = Path.GetFileName(oldUri.LocalPath);
+                            var oldBlobClient = containerClient.GetBlobClient(oldBlobName);
                             try
                             {
-                                var oldUri = new Uri(existingCar.PhotoUrl);
-                                var oldBlobName = Path.GetFileName(oldUri.LocalPath);
-                                var oldBlobClient = containerClient.GetBlobClient(oldBlobName);
                                 await oldBlobClient.DeleteIfExistsAsync();
-
-                                // Delete old local file if it exists
-                                string oldLocalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", oldBlobName);
-                                if (System.IO.File.Exists(oldLocalPath))
-                                {
-                                    System.IO.File.Delete(oldLocalPath);
-                                }
                             }
                             catch
                             {
@@ -305,10 +299,10 @@ namespace CarInfoManagementSystem.Controllers
                             });
                         }
 
-                        // Store the full blob URL in the database
-                        car.PhotoUrl = blobClient.Uri.ToString();
+                        car.PhotoUrl = $"/cars/{fileName}";
                     }
 
+                    _context.Entry(existingCar).State = EntityState.Detached;
                     _context.Update(car);
                     await _context.SaveChangesAsync();
                     TempData["Success"] = "Car updated successfully!";
@@ -432,6 +426,13 @@ namespace CarInfoManagementSystem.Controllers
                     return;
                 }
 
+                // If the URL starts with /cars/, just take the filename
+                if (car.PhotoUrl.StartsWith("/cars/", StringComparison.OrdinalIgnoreCase))
+                {
+                    car.PhotoUrl = Path.GetFileName(car.PhotoUrl);
+                    return;
+                }
+
                 var isUrl = Uri.TryCreate(car.PhotoUrl, UriKind.Absolute, out var uri);
                 if (!isUrl || uri == null)
                 {
@@ -445,41 +446,51 @@ namespace CarInfoManagementSystem.Controllers
                 {
                     string fileName = Path.GetFileName(uri.LocalPath);
                     string localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", fileName);
-                    string? directoryPath = Path.GetDirectoryName(localPath);
+                    string directoryPath = Path.GetDirectoryName(localPath) ?? throw new InvalidOperationException("Invalid path");
 
                     // Only download if file doesn't exist locally
                     if (!System.IO.File.Exists(localPath))
                     {
-                        using var semaphore = new SemaphoreSlim(1, 1);
-                        await semaphore.WaitAsync();
-                        
-                        try
+                        using var client = new HttpClient();
+                        var response = await client.GetAsync(car.PhotoUrl);
+                        if (response.IsSuccessStatusCode)
                         {
-                            // Double-check after acquiring semaphore
-                            if (!System.IO.File.Exists(localPath) && directoryPath != null)
-                            {
-                                Directory.CreateDirectory(directoryPath);
-                                using var client = new HttpClient();
-                                var response = await client.GetAsync(car.PhotoUrl);
-                                if (response.IsSuccessStatusCode)
-                                {
-                                    using var fs = new FileStream(localPath, FileMode.Create);
-                                    await response.Content.CopyToAsync(fs);
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            semaphore.Release();
+                            Directory.CreateDirectory(directoryPath);
+                            using var fs = new FileStream(localPath, FileMode.Create);
+                            await response.Content.CopyToAsync(fs);
                         }
                     }
                     
                     // Use just the filename as URL
                     car.PhotoUrl = fileName;
                 }
-                else if (uri.Scheme == "http")
+                else if (uri.Scheme == "http" || uri.Scheme == "https")
                 {
-                    car.PhotoUrl = "no-image.png";
+                    // For external URLs, download the image
+                    string fileName = $"{DateTime.Now.ToString("ddMMyyyyHHmmss")}_{Path.GetFileName(uri.LocalPath)}";
+                    string localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", fileName);
+                    string directoryPath = Path.GetDirectoryName(localPath) ?? throw new InvalidOperationException("Invalid path");
+
+                    if (!System.IO.File.Exists(localPath))
+                    {
+                        using var client = new HttpClient();
+                        var response = await client.GetAsync(uri);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            Directory.CreateDirectory(directoryPath);
+                            using var fs = new FileStream(localPath, FileMode.Create);
+                            await response.Content.CopyToAsync(fs);
+                            car.PhotoUrl = fileName;
+                        }
+                        else
+                        {
+                            car.PhotoUrl = "no-image.png";
+                        }
+                    }
+                    else
+                    {
+                        car.PhotoUrl = fileName;
+                    }
                 }
             }
             catch (Exception)
