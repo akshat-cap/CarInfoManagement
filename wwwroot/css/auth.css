@@ -3,23 +3,26 @@
     min-height: calc(100vh - 60px);
     position: relative;
     overflow: hidden;
+    background-color: var(--dark-bg);
 }
 
 .auth-background {
     position: absolute;
     inset: 0;
-    background: url('/media/home/hero-100.jpg') center/cover no-repeat fixed;
+    background: url('../media/home/hero-100.jpg') center/cover no-repeat fixed;
     filter: blur(3px);
     transform: scale(1.1);
+    opacity: 0.4;
 }
 
 .auth-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(135deg, 
-        rgba(15, 23, 42, 0.95),
-        rgba(15, 23, 42, 0.85)
+        rgba(15, 23, 42, 0.98),
+        rgba(15, 23, 42, 0.95)
     );
+    z-index: 1;
 }
 
 .auth-container {
@@ -29,27 +32,27 @@
 }
 
 .auth-card {
-    background: rgba(30, 41, 59, 0.9);
+    background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .auth-card .form-control {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: #fff;
 }
 
 .auth-card .form-control:focus {
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.9);
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
 }
 
 .auth-card .form-floating label {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .auth-card .form-floating > .form-control:focus ~ label,
@@ -64,4 +67,19 @@
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Add preload hint for the background image */
+.auth-preload {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    background-image: url('../media/home/hero-100.jpg');
 }
