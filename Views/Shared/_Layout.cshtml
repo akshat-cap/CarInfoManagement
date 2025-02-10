@@ -9,7 +9,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="preload" as="image" href="/images/no-image.png" />
     @await RenderSectionAsync("Styles", required: false)
+    <style>
+        .image-loading {
+            position: relative;
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shineEffect 1.5s linear infinite;
+            min-height: 200px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        @@keyframes shineEffect {
+            to { background-position-x: -200%; }
+        }
+
+        .image-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blur-load {
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+
+        .blur-load.loaded > .image-loading {
+            display: none;
+        }
+
+        .image-loading::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.05) 20%,
+                rgba(255, 255, 255, 0.1) 60%,
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmerEffect 2s infinite;
+        }
+
+        @@keyframes shimmerEffect {
+            100% { transform: translateX(100%); }
+        }
+    </style>
 </head>
 <body>
     <header>

@@ -344,6 +344,14 @@ h1, h2, h3, h4, h5, h6 {
 .form-floating > .form-control:not(:placeholder-shown) ~ label {
     transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
     color: var(--primary-light);
+    background: var(--dark-surface-2);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--primary-light);
 }
 
 /* Input Groups */
@@ -1085,6 +1093,46 @@ dd {
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-control:not(:placeholder-shown) {
+    background: var(--dark-surface-2);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--primary-light);
+}
+
+.auth-card .btn {
+    padding: 1rem;
+    font-weight: 500;
+}
+
+.text-premium {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.alert {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
 }
 
 /* Currency Symbol */
@@ -1118,4 +1166,38 @@ dd {
                 border-color 0.3s ease,
                 box-shadow 0.3s ease,
                 opacity 0.3s ease;
+}
+
+.auth-wrapper {
+    min-height: calc(100vh - 60px);
+    background: linear-gradient(135deg, var(--dark-surface) 0%, var(--dark-bg) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('C:\Users\AHAHMADK\Desktop\Latest\CarInfoManagement\wwwroot\media\home\hero-100.jpg') center/cover no-repeat;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.auth-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right,
+        rgba(15, 23, 42, 0.9),
+        rgba(15, 23, 42, 0.7)
+    );
+    z-index: 1;
+}
+
+.auth-container {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 0;
 }

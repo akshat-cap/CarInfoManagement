@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using CarInfoManagementSystem.Data;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Net.Http.Headers;
+using CarInfoManagementSystem.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Configure Azure Blob Storage
 builder.Services.AddSingleton(x => new BlobServiceClient(
     builder.Configuration.GetConnectionString("AzureBlobStorage")));
+
+// Add memory cache for image optimization
+builder.Services.AddMemoryCache();
 
 // Configure Identity with proper session settings
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -90,10 +95,9 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
-// Force HTTPS in all environments
-app.UseHsts();
 app.UseHttpsRedirection();
 
 // Configure static files with caching
@@ -106,6 +110,20 @@ app.UseStaticFiles(new StaticFileOptions
         ctx.Context.Response.Headers["Expires"] = DateTime.UtcNow.AddDays(1).ToString("R");
     }
 });
+
+// Add cache control headers for static files
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // Cache all static files for 30 days
+        ctx.Context.Response.Headers[HeaderNames.CacheControl] = 
+            "public,max-age=2592000";
+    }
+});
+
+// Add image optimization middleware
+app.UseImageOptimization();
 
 // Add CORS policy specifically for Azure Blob Storage
 app.UseCors(builder => builder

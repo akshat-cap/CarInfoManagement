@@ -7,6 +7,14 @@
     ViewData["Title"] = "Available Cars";
 }
 
+@section Styles {
+    <style>
+        .small-blur-load {
+            height: 240px;
+        }
+    </style>
+}
+
 <div class="container-fluid px-4 py-4">
     <div class="row mb-4">
         <div class="col-12">
@@ -68,11 +76,19 @@
             <div class="col-lg-4 col-md-6">
                 <div class="card car-card h-100">
                     <div class="position-relative overflow-hidden">
-                        <img src="@(string.IsNullOrEmpty(car.PhotoUrl) ? "/images/no-image.png" : car.PhotoUrl)" 
-                             class="card-img-top"
-                             alt="@car.Model" />
+                        <div class="image-wrapper blur-load small-blur-load">
+                            <div class="image-loading"></div>
+                            <img src="~/cars/@car.PhotoUrl" 
+                                 class="card-img-top car-image"
+                                 alt="@car.Model"
+                                 loading="lazy"
+                                 onload="this.parentElement.classList.add('loaded')"
+                                 onerror="this.onerror=null; this.src='/images/no-image.png'" />
+                        </div>
                         <div class="car-price">
-                            <span class="rupee-symbol">₹</span> @car.Price.ToString("N0")
+                            <span class="badge bg-primary">
+                                <i class="bi bi-currency-rupee me-1"></i>@car.Price.ToString("N0")
+                            </span>
                         </div>
                     </div>
                     <div class="car-info">
@@ -157,6 +173,32 @@
                         this.src = "/images/no-image.png";
                     }
                 });
+            });
+
+            // Initialize intersection observer for lazy loading
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const wrapper = img.parentElement;
+                        
+                        // Start loading when near viewport
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                        }
+                        
+                        observer.unobserve(img);
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px', // Start loading 50px before entering viewport
+                threshold: 0.1
+            });
+
+            // Observe all lazy images
+            document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+                imageObserver.observe(img);
             });
         });
     </script>

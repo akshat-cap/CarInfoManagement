@@ -41,7 +41,7 @@ namespace CarInfoManagementSystem.Controllers
             // Ensure all photos have a valid URL
             foreach (var car in cars)
             {
-                EnsureValidPhotoUrl(car);
+                await EnsureValidPhotoUrl(car);
             }
 
             PopulateDropDowns();
@@ -67,7 +67,7 @@ namespace CarInfoManagementSystem.Controllers
                 return NotFound();
             }
 
-            EnsureValidPhotoUrl(car);
+            await EnsureValidPhotoUrl(car);
             return View(car);
         }
 
@@ -369,28 +369,70 @@ namespace CarInfoManagementSystem.Controllers
             ViewBag.TransmissionTypes = new SelectList(_context.CarTransmissionTypes.OrderBy(t => t.Name), "Id", "Name");
         }
 
-        // Add this helper method
-        private void EnsureValidPhotoUrl(Car car)
+        private async Task EnsureValidPhotoUrl(Car car)
         {
-            if (string.IsNullOrEmpty(car.PhotoUrl))
+            try
             {
-                car.PhotoUrl = "/images/no-image.png";
-                return;
-            }
-
-            if (!Uri.IsWellFormedUriString(car.PhotoUrl, UriKind.Absolute))
-            {
-                // If it's a relative URL, make it absolute
-                car.PhotoUrl = Url.Content(car.PhotoUrl);
-            }
-            else
-            {
-                // Ensure the URL uses HTTPS
-                var uri = new Uri(car.PhotoUrl);
-                if (uri.Scheme == "http")
+                if (string.IsNullOrEmpty(car.PhotoUrl))
                 {
-                    car.PhotoUrl = "https" + car.PhotoUrl.Substring(4);
+                    car.PhotoUrl = "no-image.png";
+                    return;
                 }
+
+                var isUrl = Uri.TryCreate(car.PhotoUrl, UriKind.Absolute, out var uri);
+                if (!isUrl || uri == null)
+                {
+                    // Already a relative path, just ensure it's only the filename
+                    car.PhotoUrl = Path.GetFileName(car.PhotoUrl);
+                    return;
+                }
+
+                // Handle Azure Blob Storage URLs
+                if (uri.Host.Contains("blob.core.windows.net"))
+                {
+                    string fileName = Path.GetFileName(uri.LocalPath);
+                    string localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cars", fileName);
+                    string? directoryPath = Path.GetDirectoryName(localPath);
+
+                    // Only download if file doesn't exist locally
+                    if (!System.IO.File.Exists(localPath))
+                    {
+                        using var semaphore = new SemaphoreSlim(1, 1);
+                        await semaphore.WaitAsync();
+                        
+                        try
+                        {
+                            // Double-check after acquiring semaphore
+                            if (!System.IO.File.Exists(localPath) && directoryPath != null)
+                            {
+                                Directory.CreateDirectory(directoryPath);
+                                using var client = new HttpClient();
+                                var response = await client.GetAsync(car.PhotoUrl);
+                                if (response.IsSuccessStatusCode)
+                                {
+                                    using var fs = new FileStream(localPath, FileMode.Create);
+                                    await response.Content.CopyToAsync(fs);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }
+                    
+                    // Use just the filename as URL
+                    car.PhotoUrl = fileName;
+                }
+                else if (uri.Scheme == "http")
+                {
+                    car.PhotoUrl = "no-image.png";
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback to no-image if anything goes wrong
+                car.PhotoUrl = "no-image.png";
             }
         }
     }

@@ -4,69 +4,20 @@
     ViewData["Title"] = "Register";
 }
 
-<style>
-    .auth-wrapper {
-        min-height: calc(100vh - 60px);
-        background: linear-gradient(135deg, var(--dark-surface) 0%, var(--dark-bg) 100%);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .auth-wrapper::before {
-        content: '';
-        position: absolute;
-        width: 1000px;
-        height: 1000px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, var(--secondary-color) 0%, var(--primary-dark) 100%);
-        filter: blur(80px);
-        opacity: 0.15;
-        top: -400px;
-        left: -400px;
-        z-index: 0;
-    }
-
-    .auth-wrapper::after {
-        content: '';
-        position: absolute;
-        width: 800px;
-        height: 800px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, var(--primary-color) 0%, var(--accent-color) 100%);
-        filter: blur(80px);
-        opacity: 0.1;
-        bottom: -300px;
-        right: -300px;
-        z-index: 0;
-    }
-
-    .auth-container {
-        position: relative;
-        z-index: 1;
-    }
-
-    .auth-card {
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-    }
-
-    .form-floating > .form-control:focus,
-    .form-floating > .form-control:not(:placeholder-shown) {
-        background: var(--dark-surface);
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth.css" />
+}
 
 <div class="auth-wrapper">
+    <div class="auth-background"></div>
+    <div class="auth-overlay"></div>
     <div class="container-fluid px-4">
-        <div class="row justify-content-center min-vh-75 align-items-center auth-container">
+        <div class="row justify-content-center align-items-center auth-container">
             <div class="col-md-5" data-aos="fade-up">
                 <div class="text-center mb-4">
-                    <i class="bi bi-person-plus text-premium display-1"></i>
-                    <h1 class="text-premium mt-3">Create Account</h1>
-                    <p class="text-secondary">Join our exclusive luxury vehicle platform</p>
+                    <i class="bi bi-car-front display-1 text-premium"></i>
+                    <h1 class="auth-title">Join Our Community</h1>
+                    <p class="text-white-50">Create your account to explore luxury vehicles</p>
                 </div>
 
                 <div class="auth-card">
@@ -95,10 +46,10 @@
 
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-person-plus me-2"></i> Create Account
+                                    <i class="bi bi-person-plus me-2"></i>Create Account
                                 </button>
-                                <a asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-outline-primary">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i> Sign In Instead
+                                <a asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-outline-light">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In Instead
                                 </a>
                             </div>
                         </form>
@@ -106,10 +57,10 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <p class="text-secondary">
+                    <p class="text-white-50">
                         By registering, you agree to our
-                        <a href="#" class="text-premium">Terms of Service</a> and
-                        <a href="#" class="text-premium">Privacy Policy</a>
+                        <a href="#" class="text-decoration-none text-primary">Terms of Service</a> and
+                        <a href="#" class="text-decoration-none text-primary">Privacy Policy</a>
                     </p>
                 </div>
             </div>
